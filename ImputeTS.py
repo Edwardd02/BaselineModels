@@ -1,11 +1,12 @@
 from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
-import rpy2.robjects as ro
 
 import torch
 import pandas as pd
 from pathlib import Path
 import math
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
@@ -19,8 +20,8 @@ pandas2ri.activate()
 imputeTS = importr('imputeTS')
 
 # Load data from pickle files
-gaps = pd.read_pickle(PREFIX / r"results/NewMexico/5GapsHourly.pkl")
-actual = pd.read_pickle(PREFIX / r"results/NewMexico/NoGapsHourly.pkl")
+gaps = pd.read_pickle(PREFIX / r"5GapsHourly.pkl")
+actual = pd.read_pickle(PREFIX / r"NoGapsHourly.pkl")
 
 # Function definitions remain the same
 def RMSE(predicted, actual):
@@ -53,7 +54,7 @@ def statistics(pred, actual):
     print(f"MAE: {mae.item() if isinstance(mae, torch.Tensor) else mae}")
     print(f"MAPE: {mape.item() if isinstance(mape, torch.Tensor) else mape}")
 
-def addStats(methodName, pred, actual, intervals, path=PREFIX / r"results/Stats.csv", desc="NA", dataset="New Mexico"):
+def addStats(methodName, pred, actual, intervals, path="stats/stats.csv", desc="NA", dataset="New Mexico"):
     stats = pd.read_csv(path, index_col=False)
     for key in intervals:
         gap = key
@@ -77,9 +78,8 @@ intervals = {
     "2VWCShrub_Avg": [32404, 41043]
 }
 
-# Imputation and analysis for na_seadec
-pred_r = imputeTS.na_seadec(pandas2ri.py2ri(gaps))
-pred = pandas2ri.ri2py(pred_r)
+pred_r = imputeTS.na_seadec(pandas2ri.py2rpy(gaps))
+pred = pandas2ri.rpy2py(pred_r)
 pred.index = actual.index
 
 for key in intervals:
@@ -89,14 +89,11 @@ for key in intervals:
 
 for key in intervals:
     plot(pred[key], actual[key], intervals[key][0]-400, intervals[key][1]+400, title=key)
-
-addStats("ImputeTS", pred, actual, intervals, desc="na_seadec")
+plt.show()
 
 # Repeat similar steps for other imputation methods (na_interpolation, na_kalman, na_locf, na_mean)
-
-# Example for na_interpolation
-naInterpolation_r = imputeTS.na_interpolation(pandas2ri.py2ri(gaps), option="spline")
-naInterpolation = pandas2ri.ri2py(naInterpolation_r)
+naInterpolation_r = imputeTS.na_interpolation(pandas2ri.py2rpy(gaps), option="spline")
+naInterpolation = pandas2ri.rpy2py(naInterpolation_r)
 naInterpolation.index = actual.index
 
 for key in intervals:
@@ -106,9 +103,17 @@ for key in intervals:
 
 for key in intervals:
     plot(naInterpolation[key], actual[key], intervals[key][0]-400, intervals[key][1]+400, title=key)
+plt.show()
 
-addStats("ImputeTS", naInterpolation, actual, intervals, desc="na_interpolation")
+naLocf_r = imputeTS.na_locf(pandas2ri.py2rpy(gaps), option="spline")
+naLocf = pandas2ri.rpy2py(naLocf_r)
+naLocf.index = actual.index
 
-# Continue similarly for other methods...
+for key in intervals:
+    print(key)
+    statistics(naLocf[key][intervals[key][0]:intervals[key][1]], actual[key][intervals[key][0]:intervals[key][1]])
+    print("\n")
 
-# Save statistics
+for key in intervals:
+    plot(naLocf[key], actual[key], intervals[key][0]-400, intervals[key][1]+400, title=key)
+plt.show()
