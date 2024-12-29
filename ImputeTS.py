@@ -77,43 +77,88 @@ intervals = {
     "2VWCGrass_Avg": [12244, 18003],
     "2VWCShrub_Avg": [32404, 41043]
 }
+def perform_imputation_and_analysis(imputation_function, gaps, actual, intervals, title_prefix="Imputation", **kwargs):
+    """
+    Perform imputation, calculate statistics, and generate plots.
 
-pred_r = imputeTS.na_seadec(pandas2ri.py2rpy(gaps))
-pred = pandas2ri.rpy2py(pred_r)
-pred.index = actual.index
+    Parameters:
+    - imputation_function: R imputation function from the imputeTS package.
+    - gaps: Pandas DataFrame with missing values to impute.
+    - actual: Pandas DataFrame with actual (ground truth) values.
+    - intervals: Dictionary defining the intervals for evaluation.
+    - title_prefix: Prefix for plot titles.
+    - kwargs: Additional arguments for the R imputation function.
 
-for key in intervals:
-    print(key)
-    statistics(pred[key][intervals[key][0]:intervals[key][1]], actual[key][intervals[key][0]:intervals[key][1]])
-    print("\n")
+    Returns:
+    - imputed_df: Pandas DataFrame containing the imputed values.
+    """
+    from rpy2.robjects import pandas2ri
+    import matplotlib.pyplot as plt
 
-for key in intervals:
-    plot(pred[key], actual[key], intervals[key][0]-400, intervals[key][1]+400, title=key)
-plt.show()
+    # Convert gaps DataFrame to R format and perform imputation
+    imputed_r = imputation_function(pandas2ri.py2rpy(gaps), **kwargs)
+    imputed_df = pandas2ri.rpy2py(imputed_r)
+    imputed_df.index = actual.index
 
-# Repeat similar steps for other imputation methods (na_interpolation, na_kalman, na_locf, na_mean)
-naInterpolation_r = imputeTS.na_interpolation(pandas2ri.py2rpy(gaps), option="spline")
-naInterpolation = pandas2ri.rpy2py(naInterpolation_r)
-naInterpolation.index = actual.index
+    # Calculate and display statistics for each interval
+    for key in intervals:
+        print(key)
+        start, end = intervals[key]
+        statistics(imputed_df[key][start:end], actual[key][start:end])
+        print("\n")
 
-for key in intervals:
-    print(key)
-    statistics(naInterpolation[key][intervals[key][0]:intervals[key][1]], actual[key][intervals[key][0]:intervals[key][1]])
-    print("\n")
+    # Plot the results
+    for key in intervals:
+        start, end = intervals[key]
+        plot(imputed_df[key], actual[key], start - 400, end + 400, title=f"{title_prefix} - {key}")
+    plt.show()
 
-for key in intervals:
-    plot(naInterpolation[key], actual[key], intervals[key][0]-400, intervals[key][1]+400, title=key)
-plt.show()
+    return imputed_df
 
-naLocf_r = imputeTS.na_locf(pandas2ri.py2rpy(gaps), option="spline")
-naLocf = pandas2ri.rpy2py(naLocf_r)
-naLocf.index = actual.index
+# na_seadec = perform_imputation_and_analysis(
+#     imputeTS.na_seadec,
+#     gaps,
+#     actual,
+#     intervals,
+#     title_prefix="na_seadec"
+# )
+#
+# na_interpolation = perform_imputation_and_analysis(
+#     imputeTS.na_interpolation,
+#     gaps,
+#     actual,
+#     intervals,
+#     title_prefix="na_interpolation",
+# )
+#
+# na_Kalman = perform_imputation_and_analysis(
+#     imputeTS.na_Kalman,
+#     gaps,
+#     actual,
+#     intervals,
+#     title_prefix="na_Kalman"
+# )
 
-for key in intervals:
-    print(key)
-    statistics(naLocf[key][intervals[key][0]:intervals[key][1]], actual[key][intervals[key][0]:intervals[key][1]])
-    print("\n")
+na_locf = perform_imputation_and_analysis(
+    imputeTS.na_locf,
+    gaps,
+    actual,
+    intervals,
+    title_prefix="na_locf",
+)
 
-for key in intervals:
-    plot(naLocf[key], actual[key], intervals[key][0]-400, intervals[key][1]+400, title=key)
-plt.show()
+# na_mean = perform_imputation_and_analysis(
+#     imputeTS.na_mean,
+#     gaps,
+#     actual,
+#     intervals,
+#     title_prefix="na_mean"
+# )
+
+# na_random = perform_imputation_and_analysis(
+#     imputeTS.na_random,
+#     gaps,
+#     actual,
+#     intervals,
+#     title_prefix="na_random"
+# )
