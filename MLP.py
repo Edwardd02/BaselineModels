@@ -18,6 +18,7 @@ def getDevice():
         return torch.device('cpu')
 
 device = getDevice()
+
 def RMSE(predicted, actual):
   return math.sqrt(sum((predicted - actual)**2)/len(predicted))
 
