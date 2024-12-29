@@ -1,6 +1,8 @@
 import subprocess
 import pandas as pd
 import torch
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import math
 from sklearn.experimental import enable_iterative_imputer
@@ -97,6 +99,3 @@ for col in intervals:
 
 for col in intervals:
     plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="Not Filled P2_VWC")
-
-for col in intervals:
-    addStats("SKLearn", pred[col], actual[col], intervals[col][0], intervals[col][1], desc="Iterative Imputer, default settings")
