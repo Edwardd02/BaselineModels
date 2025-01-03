@@ -13,23 +13,9 @@ from pathlib import Path
 # Set PREFIX to your local data directory
 PREFIX = Path(r"data_imputation")
 
-# Define hyperparameters
-hyperparams = {
-    'method': 'spline',
-    'm': 5,
-    'maxiter': 100,
-    'tol': 1e-04
-}
 
-# Create a list of arguments for the R script
-args = ['Rscript', 'mtsdi_generate_pred.R', os.path.abspath(str(PREFIX))]
-# Add hyperparameters to the arguments
-for param, value in hyperparams.items():
-    args.append(f"--{param}")
-    args.append(str(value))
-
-# Execute R script and pass the directory path and hyperparameters
-proc = subprocess.run(args, capture_output=True, text=True)
+# Execute R script and pass the directory path
+proc = subprocess.run(['Rscript', 'mtsdi_generate_pred.R', os.path.abspath(str(PREFIX))], capture_output=True, text=True)
 print("R script output:")
 print(proc.stdout)
 print("R script errors:")
