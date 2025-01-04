@@ -8,7 +8,7 @@ import math
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-
+import time
 # Load data from pickle files
 PREFIX = Path(r"data_imputation")
 def getDevice():
@@ -310,6 +310,7 @@ def impute(model, data, col, lags, norm_params, gaps, pred):
   pred[col] = denormalize(pred[col], norm_params[col][0], norm_params[col][1])
   pred.index = gaps.index
   return pred, gaps
+start_time = time.time()
 
 #Pred is the data frame containing all predictions
 #Note it will only contain columns with gaps in them
@@ -341,7 +342,9 @@ for col in gaps.columns:
   #Impute missing Values
   #output_column is the column with the gap (this is necessary because the loop will fill in this column as it goes)
   pred, gaps = impute(model, data, col, lags, norm_params, gaps, pred)
+end_time = time.time()
+print(f"Training time: {end_time - start_time}")
 intervals = {"P2_VWC": [1440, 2160]}
 for col in intervals:
-  plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="SKLearn Filled P2_VWC")
+  plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="MLP prediction on SKLearn filled SMP data")
 plt.show()

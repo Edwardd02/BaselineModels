@@ -144,7 +144,7 @@ na_locf = perform_imputation_and_analysis(
     gaps,
     actual,
     intervals,
-    title_prefix="na_locf",
+    title_prefix="ImputeTS prediction on New Mexico data",
 )
 
 # na_mean = perform_imputation_and_analysis(
