@@ -102,7 +102,7 @@ for col in intervals:
     statisics(pred[col][intervals[col][0]:intervals[col][1]], actual[col][intervals[col][0]:intervals[col][1]])
 
 for col in intervals:
-    plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="Not Filled P2_VWC")
+    plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="MissForest prediction on SMP data")
 # for col in intervals:
 #   addStats("MissForest", pred[col], actual[col], intervals[col][0], intervals[col][1], desc = "Using SKLearn Regressors")
 plt.show()

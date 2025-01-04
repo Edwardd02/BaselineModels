@@ -2,12 +2,14 @@ from pathlib import Path
 import sys
 import pandas as pd
 import torch
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import math
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 import os
-
+import time
 # Set PREFIX to your local data directory
 PREFIX = Path(r"data_imputation")
 
@@ -64,11 +66,21 @@ gaps = pd.read_pickle(PREFIX / "SMPSingleGap.pkl")
 actual = pd.read_pickle(PREFIX / "OriginalSMPData.pkl")
 
 # Create Imputer
-imp = IterativeImputer()
+imp = IterativeImputer(
+    estimator=None,
+    max_iter=100,
+    tol=1e-4,
+    initial_strategy='mean',
+    add_indicator=True,
+    random_state=42,
+    verbose=1
+)
+start_time = time.time()
 
 # Train Imputer
 imp.fit(gaps)
-
+end_time = time.time()
+print(f"Training time: {end_time - start_time}")
 # Make Prediction
 pred = imp.transform(gaps)
 
@@ -85,4 +97,4 @@ for col in intervals:
     statistics(pred[col][intervals[col][0]:intervals[col][1]], actual[col][intervals[col][0]:intervals[col][1]])
 
 for col in intervals:
-    plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="Not Filled P2_VWC")
+    plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="SKLearn prediction on SMP data")

@@ -98,4 +98,4 @@ for col in intervals:
     statistics(pred[col][intervals[col][0]:intervals[col][1]], actual[col][intervals[col][0]:intervals[col][1]])
 
 for col in intervals:
-    plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="Not Filled P2_VWC")
+    plot(pred[col], actual[col], intervals[col][0], intervals[col][1], title="mtsdi prediction on SMP data")
